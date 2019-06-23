@@ -1,0 +1,31 @@
+{
+  "name": "lagiacrus",
+  "version": "1.0.0",
+  "description": "Lagiacrus adds decorators to Koa Application",
+  "author": "Benoit Briatte",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Digipolitan/lagiacrus.git"
+  },
+  "tags": [
+    "koa",
+    "router",
+    "decorator",
+    "http",
+    "validator",
+    "transformer"
+  ],
+  "devDependencies": {
+    "@types/koa": "^2.0.48",
+    "@types/koa-router": "^7.0.40",
+    "typescript": "^3.5.1"
+  },
+  "dependencies": {
+    "class-transformer": "^0.2.3",
+    "class-validator": "^0.9.1",
+    "koa": "^2.7.0",
+    "koa-router": "^7.4.0",
+    "reflect-metadata": "^0.1.13"
+  }
+}
