@@ -25,14 +25,14 @@ export class RouteParametersUtils {
             options = options || {};
         }
         if (data === undefined) {
-            if (options.isRequired === true) {
+            if (options.isOptional !== true) {
                 ctx.throw(400);
             }
             return undefined;
         }
         if (options.key !== undefined) {
             if (data[options.key] === undefined) {
-                if (options.isRequired === true) {
+                if (options.isOptional !== true) {
                     ctx.throw(400);
                 }
                 return undefined;
