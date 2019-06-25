@@ -17,7 +17,6 @@ export class RouteParametersUtils {
     }
 
     public static defaultDecoratorHandler<T>(ctx: RouterContext, data?: any, options?: IParameterDecoratorOptions<T> | string): Promise<T> {
-        ctx.assert(data, 400);
         if (typeof options === 'string') {
             options = {
                 key: options as string
@@ -25,8 +24,19 @@ export class RouteParametersUtils {
         } else {
             options = options || {};
         }
+        if (data === undefined) {
+            if (options.isRequired === true) {
+                ctx.throw(400);
+            }
+            return undefined;
+        }
         if (options.key !== undefined) {
-            ctx.assert(data.hasOwnProperty(options.key), 400);
+            if (data[options.key] === undefined) {
+                if (options.isRequired === true) {
+                    ctx.throw(400);
+                }
+                return undefined;
+            }
             data = data[options.key];
         }
         if(options.transform !== undefined) {
