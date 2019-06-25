@@ -3,6 +3,7 @@ import {ControllerConstructorOrInstance} from './consts';
 import {SanitizerUtils} from './utils';
 import {RouterBuilder} from './router-builder';
 import {ServerOptions} from './interfaces';
+import * as http from 'http';
 
 export class Server {
 
@@ -27,8 +28,11 @@ export class Server {
         });
     }
 
-    public start(port: string | number) {
-        this.app.listen(port, () => console.log(`listening on port ${port}...`));
+    public start(port: string | number, listeningListener?: () => void): http.Server {
+        if (typeof port === 'string') {
+            port = parseInt(port, 10);
+        }
+        return this.app.listen(port, listeningListener);
     }
 }
 

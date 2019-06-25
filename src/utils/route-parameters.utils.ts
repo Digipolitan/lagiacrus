@@ -16,9 +16,15 @@ export class RouteParametersUtils {
         };
     }
 
-    public static defaultDecoratorHandler<T>(ctx: RouterContext, data?: any, options?: IParameterDecoratorOptions<T>): Promise<T> {
+    public static defaultDecoratorHandler<T>(ctx: RouterContext, data?: any, options?: IParameterDecoratorOptions<T> | string): Promise<T> {
         ctx.assert(data, 400);
-        options = options || {};
+        if (typeof options === 'string') {
+            options = {
+                key: options as string
+            }
+        } else {
+            options = options || {};
+        }
         if (options.key !== undefined) {
             ctx.assert(data.hasOwnProperty(options.key), 400);
             data = data[options.key];
