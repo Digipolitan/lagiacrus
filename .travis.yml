@@ -11,5 +11,5 @@ notifications:
   email: false
 
 before_script: npm install -g gulp-cli
-script: gulp publish
+script: gulp build&publish
 
