@@ -10,6 +10,8 @@ branches:
 notifications:
   email: false
 
-before_script: npm install -g gulp-cli
+before_script:
+  - npm install -g gulp-cli
+  - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
 script: gulp build-publish
 
