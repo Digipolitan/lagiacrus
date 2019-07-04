@@ -67,7 +67,7 @@ gulp.task('publish', (done) => {
     spawn('npm', ['publish', 'dist'], { stdio: 'inherit' }).on('close', done);
 });
 
-gulp.task('build&publish', gulp.series(
+gulp.task('build-publish', gulp.series(
     'default',
     'publish'
 ));
