@@ -1,0 +1,12 @@
+language: node_js
+
+publish:
+  cache: npm
+  provider: script
+  notifications:
+    email: false
+  before_script:
+    - npm install -g gulp-cli
+  script: gulp publish
+  branches:
+    only: master
