@@ -27,8 +27,14 @@ export class TransformUtils {
             if(!Array.isArray(objs)) {
                 objs = [objs]
             }
-            if(options.validate !== false) {
-                const validatorOptions: ValidatorOptions | undefined = typeof options.validate === 'boolean' ? undefined : options.validate;
+            const validate = options.validate;
+            if(validate !== false) {
+                let validatorOptions: ValidatorOptions | undefined;
+                if (typeof validate === 'boolean') {
+                    validatorOptions = undefined;
+                } else {
+                    validatorOptions = validate as ValidatorOptions;
+                }
                 for(let obj of objs) {
                     const errors = await validateClass(obj, validatorOptions);
                     if(errors.length > 0) {

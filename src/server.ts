@@ -9,14 +9,17 @@ export class Server {
 
     public readonly app: Koa;
     public readonly basePath: string;
+    private server?: http.Server;
 
     public constructor(options: ServerOptions = {}) {
         this.app = options.app || new Koa();
         this.basePath = SanitizerUtils.sanitizePath((options.basePath || '/'));
-        if (options.middlewares !== undefined) {
-            for (const middleware of options.middlewares) {
-                this.app.use(middleware);
-            }
+        const middlewares = options.middlewares;
+        if (middlewares === undefined) {
+            return;
+        }
+        for (const middleware of middlewares) {
+            this.app.use(middleware);
         }
     }
 
@@ -28,11 +31,37 @@ export class Server {
         });
     }
 
-    public start(port: string | number, listeningListener?: () => void): http.Server {
-        if (typeof port === 'string') {
-            port = parseInt(port, 10);
-        }
-        return this.app.listen(port, listeningListener);
+    public start(port: string | number): Promise<http.Server> {
+        return new Promise<http.Server>((resolve, reject) => {
+            if (this.server !== undefined) {
+                reject(new TypeError('The server cannot be started, it\'s already listening'));
+                return;
+            }
+            if (typeof port === 'string') {
+                port = parseInt(port as string, 10);
+            }
+            this.server = this.app.listen(port as number, () => {
+                resolve(this.server);
+            });
+        });
+    }
+
+    public close(): Promise<http.Server> {
+        return new Promise<http.Server|undefined>((resolve, reject) => {
+           if (this.server === undefined) {
+               reject(new TypeError('The server cannot be closed, its not listening yet'));
+               return;
+           }
+           this.server.close((err?: Error) => {
+               if (err !== undefined) {
+                   reject(err);
+                   return;
+               }
+               const server = this.server;
+               this.server = undefined;
+               resolve(server);
+           });
+        });
     }
 }
 

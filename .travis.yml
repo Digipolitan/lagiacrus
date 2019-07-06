@@ -4,14 +4,22 @@ node_js:
 
 cache: npm
 
-branches:
-  only: master
-
 notifications:
   email: false
 
-before_script:
-  - npm install -g gulp-cli
-  - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-script: gulp build-publish
+jobs:
+  include:
+    - stage: tests
+      before_script:
+        - npm install -g gulp-cli
+      script: gulp test
 
+    - stage: deploy
+      before_script:
+        - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      script: gulp deploy
+
+stages:
+  - tests
+  - name: deploy
+    if: branch = master
