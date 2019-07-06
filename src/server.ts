@@ -33,7 +33,7 @@ export class Server {
 
     public start(port: string | number): Promise<http.Server> {
         return new Promise<http.Server>((resolve, reject) => {
-            if (this.server !== undefined) {
+            if (this.isStarting) {
                 reject(new TypeError('The server cannot be started, it\'s already listening'));
                 return;
             }
@@ -46,9 +46,13 @@ export class Server {
         });
     }
 
+    public get isStarting(): boolean {
+        return this.server !== undefined;
+    }
+
     public close(): Promise<http.Server> {
         return new Promise<http.Server|undefined>((resolve, reject) => {
-           if (this.server === undefined) {
+           if (!this.isStarting) {
                reject(new TypeError('The server cannot be closed, its not listening yet'));
                return;
            }

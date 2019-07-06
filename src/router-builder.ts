@@ -23,7 +23,7 @@ export class RouterBuilder {
         const builder = new RouterBuilder(options);
         builder.middlewares(...controller[LAGIACRUS_KEY].middlewares);
         for (let key in controller) {
-            if (controller.hasOwnProperty(key) && controller[key][LAGIACRUS_KEY]) {
+            if (controller[key] && controller[key][LAGIACRUS_KEY]) {
                 builder.method(controller[key][LAGIACRUS_KEY], controller[key]);
             }
         }
