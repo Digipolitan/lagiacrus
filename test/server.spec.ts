@@ -46,4 +46,22 @@ describe('the server', () => {
         expect(res.status).to.equal(200);
         expect(res.text).to.equal('world');
     });
+
+    it('should retrieve query int parameter on controller',async () => {
+        lagiacrus.mount(HelloController);
+        const server = await lagiacrus.start(port);
+        const request = supertest(server);
+        const res = await request.get('/hello/check?type=10');
+        expect(res.status).to.equal(200);
+        expect(res.text).to.equal('number');
+    });
+
+    it('should retrieve route params boolean on controller',async () => {
+        lagiacrus.mount(HelloController);
+        const server = await lagiacrus.start(port);
+        const request = supertest(server);
+        const res = await request.get('/hello/check/yes');
+        expect(res.status).to.equal(200);
+        expect(res.text).to.equal('true');
+    });
 });
