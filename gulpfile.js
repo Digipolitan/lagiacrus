@@ -18,12 +18,16 @@ const gulpDependencies = [
     'merge-stream',
     'gulp-file',
     'gulp-shell',
-    'gulp-mocha',
+    'gulp-mocha'
+];
+const testDependencies = [
     '@types/mocha',
     'mocha',
     '@types/chai',
     'chai',
-    'supertest'
+    'supertest',
+    '@types/koa-bodyparser',
+    'koa-bodyparser'
 ];
 
 const baseProject = gulpTS.createProject('./tsconfig.json');
@@ -37,9 +41,9 @@ function compileProjectTask(project, outPath) {
             compileStream = compileStream.pipe(gulpSourceMaps.init());
         }
         compileStream = compileStream.pipe(project());
-        let jsStream = compileStream.js.pipe(gulpUglify());
+        let jsStream = compileStream.js;//.pipe(gulpUglify());
         if (project.options.sourceMap === true) {
-            jsStream = jsStream.pipe(gulpSourceMaps.write('.'));
+            jsStream = jsStream.pipe(gulpSourceMaps.write());
         }
         let outDir = project.options.outDir;
         if (outPath !== undefined) {
@@ -64,6 +68,9 @@ function preparePackageJsonTask(project) {
         const pack = require('./package.json');
         for (let gulpDependency of gulpDependencies) {
             delete pack.devDependencies[gulpDependency];
+        }
+        for (let testDependency of testDependencies) {
+            delete pack.devDependencies[testDependency];
         }
         pack.main = 'lib/index.js';
         if (project.options.declaration === true) {

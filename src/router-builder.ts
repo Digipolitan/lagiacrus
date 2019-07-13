@@ -4,6 +4,7 @@ import {Middleware} from 'koa';
 import {ControllerConstructorOrInstance, LAGIACRUS_KEY} from './consts';
 import {ControllerUtils, SanitizerUtils} from './utils';
 import {IMethodProxy} from './interfaces';
+import {HttpError} from './http.error';
 
 export class RouterBuilder {
 
@@ -60,6 +61,10 @@ export class RouterBuilder {
                     ctx.body = res;
                 }
             } catch(err) {
+                if (err instanceof HttpError) {
+                    ctx.throw(err.statusCode, err);
+                    return;
+                }
                 ctx.throw(500, err);
             }
         };

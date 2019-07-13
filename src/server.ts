@@ -56,13 +56,13 @@ export class Server {
                reject(new TypeError('The server cannot be closed, its not listening yet'));
                return;
            }
-           this.server.close((err?: Error) => {
+            const server = this.server;
+            this.server = undefined;
+            server.close((err?: Error) => {
                if (err !== undefined) {
                    reject(err);
                    return;
                }
-               const server = this.server;
-               this.server = undefined;
                resolve(server);
            });
         });
