@@ -1,6 +1,6 @@
 {
   "name": "lagiacrus",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Lagiacrus adds decorators to Koa Application",
   "author": "Benoit Briatte",
   "license": "BSD-3-Clause",
@@ -24,7 +24,7 @@
     "@types/mocha": "^5.2.7",
     "@types/supertest": "^2.0.8",
     "chai": "^4.2.0",
-    "del": "^4.1.1",
+    "del": "^5.0.0",
     "gulp": "^4.0.2",
     "gulp-file": "^0.4.0",
     "gulp-mocha": "^6.0.0",
@@ -35,9 +35,9 @@
     "gulp-uglify": "^3.0.2",
     "koa-bodyparser": "^4.2.1",
     "merge-stream": "^2.0.0",
-    "mocha": "^6.1.4",
+    "mocha": "^6.2.0",
     "supertest": "^4.0.2",
-    "typescript": "^3.5.1"
+    "typescript": "^3.5.3"
   },
   "dependencies": {
     "class-transformer": "^0.2.3",

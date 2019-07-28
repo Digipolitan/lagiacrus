@@ -1,12 +1,12 @@
 const gulp = require('gulp');
 const gulpTS = require('gulp-typescript');
-const gulpUglify = require('gulp-uglify');
 const gulpSourceMaps = require('gulp-sourcemaps');
 const del = require('del');
 const mergeStream = require('merge-stream');
 const gulpFile = require('gulp-file');
 const gulpShell = require('gulp-shell');
 const gulpMocha = require('gulp-mocha');
+const gulpUglify = require('gulp-uglify');
 
 const gulpDependencies = [
     'del',
@@ -34,20 +34,24 @@ const baseProject = gulpTS.createProject('./tsconfig.json');
 const tsReleaseProject = gulpTS.createProject('./tsconfig.release.json');
 const tsTestProject = gulpTS.createProject('./tsconfig.test.json');
 
-function compileProjectTask(project, outPath) {
+function compileProjectTask(project, options) {
+    options = options || {};
     return () => {
         let compileStream = project.src();
         if (project.options.sourceMap === true) {
             compileStream = compileStream.pipe(gulpSourceMaps.init());
         }
         compileStream = compileStream.pipe(project());
-        let jsStream = compileStream.js;//.pipe(gulpUglify());
+        let jsStream = compileStream.js;
+        if (options.uglify === true) {
+            jsStream = jsStream.pipe(gulpUglify());
+        }
         if (project.options.sourceMap === true) {
             jsStream = jsStream.pipe(gulpSourceMaps.write());
         }
         let outDir = project.options.outDir;
-        if (outPath !== undefined) {
-            outDir += `/${outPath}`;
+        if (options.outPath !== undefined) {
+            outDir += `/${options.outPath}`;
         }
         return mergeStream(
             compileStream.dts,
@@ -93,7 +97,10 @@ gulp.task('clean', () => {
 });
 
 gulp.task('compile', compileProjectTask(tsReleaseProject));
-gulp.task('compileRelease', compileProjectTask(tsReleaseProject, 'lib'));
+gulp.task('compileRelease', compileProjectTask(tsReleaseProject, {
+    outPath: 'lib',
+    uglify: true
+}));
 gulp.task('compileTesting', compileProjectTask(tsTestProject));
 
 gulp.task('default', gulp.series(
