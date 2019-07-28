@@ -1,11 +1,12 @@
 const gulp = require('gulp');
-const ts = require('gulp-typescript');
-const uglify = require('gulp-uglify');
-const sourcemaps = require('gulp-sourcemaps');
+const gulpTS = require('gulp-typescript');
+const gulpSourceMaps = require('gulp-sourcemaps');
 const del = require('del');
 const mergeStream = require('merge-stream');
-const file = require('gulp-file');
-const spawn = require('child_process').spawn;
+const gulpFile = require('gulp-file');
+const gulpShell = require('gulp-shell');
+const gulpMocha = require('gulp-mocha');
+const gulpUglify = require('gulp-uglify');
 
 const gulpDependencies = [
     'del',
@@ -15,59 +16,108 @@ const gulpDependencies = [
     'gulp-typescript',
     'gulp-uglify',
     'merge-stream',
-    'gulp-file'
+    'gulp-file',
+    'gulp-shell',
+    'gulp-mocha'
+];
+const testDependencies = [
+    '@types/mocha',
+    'mocha',
+    '@types/chai',
+    'chai',
+    'supertest',
+    '@types/koa-bodyparser',
+    'koa-bodyparser'
 ];
 
-const tsProject = ts.createProject('./tsconfig.json');
+const baseProject = gulpTS.createProject('./tsconfig.json');
+const tsReleaseProject = gulpTS.createProject('./tsconfig.release.json');
+const tsTestProject = gulpTS.createProject('./tsconfig.test.json');
+
+function compileProjectTask(project, options) {
+    options = options || {};
+    return () => {
+        let compileStream = project.src();
+        if (project.options.sourceMap === true) {
+            compileStream = compileStream.pipe(gulpSourceMaps.init());
+        }
+        compileStream = compileStream.pipe(project());
+        let jsStream = compileStream.js;
+        if (options.uglify === true) {
+            jsStream = jsStream.pipe(gulpUglify());
+        }
+        if (project.options.sourceMap === true) {
+            jsStream = jsStream.pipe(gulpSourceMaps.write());
+        }
+        let outDir = project.options.outDir;
+        if (options.outPath !== undefined) {
+            outDir += `/${options.outPath}`;
+        }
+        return mergeStream(
+            compileStream.dts,
+            jsStream
+        ).pipe(gulp.dest(outDir))
+    }
+}
+
+function bundleFilesTask(project) {
+    return function bundleFiles() {
+        return gulp.src(['LICENSE', 'README.md'])
+            .pipe(gulp.dest(project.options.outDir));
+    };
+}
+
+function preparePackageJsonTask(project) {
+    return function preparePackageJson() {
+        const pack = require('./package.json');
+        for (let gulpDependency of gulpDependencies) {
+            delete pack.devDependencies[gulpDependency];
+        }
+        for (let testDependency of testDependencies) {
+            delete pack.devDependencies[testDependency];
+        }
+        pack.main = 'lib/index.js';
+        if (project.options.declaration === true) {
+            pack.types = 'lib/index.d.js';
+        }
+        return gulpFile('package.json', JSON.stringify(pack, null, 2), { src: true })
+            .pipe(gulp.dest(project.options.outDir));
+    };
+}
+
+function runMochaTask(project) {
+    return function mocha() {
+        return gulp.src(project.options.outDir + '/**/*.spec.js')
+            .pipe(gulpMocha());
+    };
+}
 
 gulp.task('clean', () => {
-    return del('dist');
+    return del(baseProject.options.outDir);
 });
 
-gulp.task('compile', () => {
-    const tsResult = tsProject.src().pipe(tsProject());
-    let jsStream = tsResult.js;
-    if (tsProject.options.sourceMap === true) {
-        jsStream = jsStream.pipe(sourcemaps.init())
-    }
-    jsStream = jsStream.pipe(uglify());
-    if (tsProject.options.sourceMap === true) {
-        jsStream = jsStream.pipe(sourcemaps.write('.'))
-    }
-    return mergeStream(
-        tsResult.dts,
-        jsStream
-    ).pipe(gulp.dest(tsProject.options.outDir + '/lib'))
-});
-
-gulp.task('npm-files', () => {
-   return gulp.src(['LICENSE', 'README.md'])
-       .pipe(gulp.dest(tsProject.options.outDir));
-});
-
-gulp.task('package', () => {
-    const package = require('./package.json');
-    for (let gulpDependency of gulpDependencies) {
-        delete package.devDependencies[gulpDependency];
-    }
-    package.main = 'lib/index.js';
-    if (tsProject.options.declaration === true) {
-        package.types = 'lib/index.d.ts';
-    }
-    return file('package.json', JSON.stringify(package, null, 2), { src: true })
-        .pipe(gulp.dest(tsProject.options.outDir));
-});
+gulp.task('compile', compileProjectTask(tsReleaseProject));
+gulp.task('compileRelease', compileProjectTask(tsReleaseProject, {
+    outPath: 'lib',
+    uglify: true
+}));
+gulp.task('compileTesting', compileProjectTask(tsTestProject));
 
 gulp.task('default', gulp.series(
     'clean',
-    gulp.parallel('compile', 'npm-files', 'package')
+    'compile'
 ));
 
-gulp.task('publish', (done) => {
-    spawn('npm', ['publish', 'dist'], { stdio: 'inherit' }).on('close', done);
-});
+gulp.task('test', gulp.series(
+    'clean',
+    'compileTesting',
+    runMochaTask(tsTestProject)
+));
 
-gulp.task('build-publish', gulp.series(
-    'default',
-    'publish'
+gulp.task('deploy', gulp.series(
+    'clean',
+    'compileRelease',
+    preparePackageJsonTask(tsReleaseProject),
+    bundleFilesTask(tsReleaseProject),
+    gulpShell.task(`npm publish ${tsReleaseProject.options.outDir}`)
 ));

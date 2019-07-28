@@ -17,30 +17,33 @@ export class RouteParametersUtils {
     }
 
     public static defaultDecoratorHandler<T>(ctx: RouterContext, data?: any, options?: IParameterDecoratorOptions<T> | string): Promise<T> {
+        let parameterOptions: IParameterDecoratorOptions<T>;
         if (typeof options === 'string') {
-            options = {
+            parameterOptions = {
                 key: options as string
             }
         } else {
-            options = options || {};
+            parameterOptions = options || {};
         }
         if (data === undefined) {
-            if (options.isOptional !== true) {
+            if (parameterOptions.isOptional !== true) {
                 ctx.throw(400);
             }
             return undefined;
         }
-        if (options.key !== undefined) {
-            if (data[options.key] === undefined) {
-                if (options.isOptional !== true) {
+        const key = parameterOptions.key;
+        if (key !== undefined) {
+            if (data[key] === undefined) {
+                if (parameterOptions.isOptional !== true) {
                     ctx.throw(400);
                 }
                 return undefined;
             }
-            data = data[options.key];
+            data = data[key];
         }
-        if(options.transform !== undefined) {
-            return options.transform(ctx, data);
+        const transform = parameterOptions.transform;
+        if(transform !== undefined) {
+            return transform(ctx, data);
         }
         return data;
     }

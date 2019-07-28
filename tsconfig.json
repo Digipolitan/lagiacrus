@@ -3,18 +3,14 @@
     "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
     "sourceMap": true,
     "outDir": "dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "lib": [
-      "es2015"
+      "es2019"
     ]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
   "exclude": [
     "dist",
     "node_modules"

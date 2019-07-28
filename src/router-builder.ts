@@ -1,9 +1,10 @@
 import * as Router from 'koa-router';
-import {Middleware} from 'koa';
 import {RouterContext} from 'koa-router';
+import {Middleware} from 'koa';
 import {ControllerConstructorOrInstance, LAGIACRUS_KEY} from './consts';
 import {ControllerUtils, SanitizerUtils} from './utils';
 import {IMethodProxy} from './interfaces';
+import {HttpError} from './http.error';
 
 export class RouterBuilder {
 
@@ -50,8 +51,9 @@ export class RouterBuilder {
 
     public method(method: IMethodProxy, impl: Function): RouterBuilder {
         const handler = async (ctx: RouterContext): Promise<any> => {
-            if(method.statusCode !== undefined) {
-                ctx.status = method.statusCode;
+            const statusCode = method.statusCode;
+            if(statusCode !== undefined) {
+                ctx.status = statusCode;
             }
             try {
                 const res = await impl(ctx);
@@ -59,13 +61,19 @@ export class RouterBuilder {
                     ctx.body = res;
                 }
             } catch(err) {
+                if (err instanceof HttpError) {
+                    ctx.throw(err.statusCode, err);
+                    return;
+                }
                 ctx.throw(500, err);
             }
         };
-        const matcher = Router.prototype[method.httpVerb] || Router.prototype.all;
-        const routePath = SanitizerUtils.sanitizePath(method.path);
-        if (method.middlewares) {
-            matcher.bind(this.router)(routePath, ...method.middlewares, handler);
+        const {httpVerb, path} = method;
+        const middlewares = method.middlewares;
+        const matcher = Router.prototype[httpVerb] || Router.prototype.all;
+        const routePath = SanitizerUtils.sanitizePath(path);
+        if (middlewares) {
+            matcher.bind(this.router)(routePath, ...middlewares, handler);
         } else {
             matcher.bind(this.router)(routePath, handler);
         }

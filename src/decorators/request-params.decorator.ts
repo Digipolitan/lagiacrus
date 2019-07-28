@@ -24,4 +24,3 @@ export const State = RouteParametersUtils.createDecorator((ctx: RouterContext, o
 export const Req = RouteParametersUtils.createDecorator((ctx => Promise.resolve(ctx.request)));
 export const Res = RouteParametersUtils.createDecorator((ctx => Promise.resolve(ctx.response)));
 export const Next = RouteParametersUtils.createDecorator((ctx => Promise.resolve(ctx.next)));
-
