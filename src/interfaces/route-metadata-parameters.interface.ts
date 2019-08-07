@@ -1,7 +1,8 @@
 import {RouteHandlerDecorator} from '../consts';
+import {IParameterProxy} from './parameter-proxy.interface';
 
 export interface IRouteMetadataParameters<T> {
     readonly index: number;
-    readonly userInfo?: T;
-    readonly handler: RouteHandlerDecorator<T>;
+    parameterProxy?: IParameterProxy<T>;
+    handler?: RouteHandlerDecorator<T>;
 }

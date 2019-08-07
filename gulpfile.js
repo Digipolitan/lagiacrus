@@ -25,6 +25,7 @@ const testDependencies = [
     'mocha',
     '@types/chai',
     'chai',
+    '@types/supertest',
     'supertest',
     '@types/koa-bodyparser',
     'koa-bodyparser'

@@ -55,7 +55,7 @@ describe('the server', () => {
         });
 
         it('should retrieve query int parameter on controller',async () => {
-            const res = await request.get('/hello/check?type=10');
+            const res = await request.get('/hello/check');
             expect(res.status).to.equal(200);
             expect(res.text).to.equal('number');
         });

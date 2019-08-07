@@ -1,9 +1,9 @@
 import {Body, Controller, Get, Middleware, Params, Post, Put, Query, Res, StatusCode} from '../src/decorators';
 import {TransformUtils as T} from '../src/utils';
 import {HelloCreateDTO} from './hello-create.dto';
-import {Request, Response} from 'koa';
 import bodyParser = require('koa-bodyparser');
-import {HttpError} from '../src';
+import {HttpError, OptionalParameterDecoratorOptions} from '../src';
+import {Transform} from 'class-transformer';
 
 @Controller({
     path: '/hello'
@@ -16,10 +16,8 @@ export class HelloController {
     }
 
     @Get('/check')
-    world(@Query({
-        key: 'type',
-        transform: T.toInt
-    }) type: number): string {
+    world(@Transform() @Optional() @Query('type') type: number = 12): string {
+        console.log(type);
         return typeof type;
     }
 
@@ -49,7 +47,7 @@ export class HelloController {
         transform: T.toBoolean
     }) error?: boolean) {
         if (error === true) {
-            throw HttpError.conflict();
+            throw HttpError.conflict;
         }
     }
 }
