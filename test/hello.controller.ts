@@ -1,9 +1,8 @@
-import {Body, Controller, Get, Middleware, Params, Post, Put, Query, Res, StatusCode} from '../src/decorators';
+import {Body, Controller, Get, Middleware, Params, Post, Put, Query, Res, StatusCode, Transform, Optional} from '../src/decorators';
 import {TransformUtils as T} from '../src/utils';
 import {HelloCreateDTO} from './hello-create.dto';
 import bodyParser = require('koa-bodyparser');
-import {HttpError, OptionalParameterDecoratorOptions} from '../src';
-import {Transform} from 'class-transformer';
+import {HttpError} from '../src';
 
 @Controller({
     path: '/hello'
@@ -16,16 +15,12 @@ export class HelloController {
     }
 
     @Get('/check')
-    world(@Transform() @Optional() @Query('type') type: number = 12): string {
-        console.log(type);
+    world(@Transform(T.toInt) @Optional() @Query('type') type: number = 12): string {
         return typeof type;
     }
 
     @Get('/check/:bool')
-    params(@Params({
-       key: 'bool',
-       transform: T.toBoolean
-    }) type: boolean): boolean {
+    params(@Params('bool') @Transform(T.toBoolean) type: boolean): boolean {
         return type;
     }
 
@@ -33,19 +28,13 @@ export class HelloController {
         bodyParser()
     )
     @Post('/create')
-    create(@Body({
-        transform: T.toClass(HelloCreateDTO)
-    }) hello: HelloCreateDTO) {
+    create(@Body() @Transform(T.toClass(HelloCreateDTO)) hello: HelloCreateDTO) {
         return hello.say;
     }
 
     @Put('/update')
     @StatusCode(204)
-    update(@Query({
-        key: 'error',
-        isOptional: true,
-        transform: T.toBoolean
-    }) error?: boolean) {
+    update(@Query('error') @Optional() @Transform(T.toBoolean) error?: boolean) {
         if (error === true) {
             throw HttpError.conflict;
         }

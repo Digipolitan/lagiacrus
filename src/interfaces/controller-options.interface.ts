@@ -3,7 +3,7 @@ import {ControllerConstructorOrInstance, ControllerProvider} from '../consts';
 import {IRouterOptions} from 'koa-router';
 
 export interface IControllerOptions {
-    path?: string;
+    readonly path?: string;
     readonly middlewares?: Middleware[];
     readonly children?: ControllerConstructorOrInstance[] | ControllerProvider;
     readonly router?: IRouterOptions;

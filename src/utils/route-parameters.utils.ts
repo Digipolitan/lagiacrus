@@ -15,50 +15,45 @@ export class RouteParametersUtils {
         let routeMetaDataParameter =  routeMetaDataParameters.find((rmdp) => rmdp.index === parameterIndex);
         if(routeMetaDataParameter === undefined) {
             routeMetaDataParameter = {
-                index: parameterIndex
+                index: parameterIndex,
+                parameterProxy: {}
             };
             routeMetaDataParameters.push(routeMetaDataParameter);
         }
         return routeMetaDataParameter;
     }
 
-    public static createDecoratorHandler<T>(handler: RouteHandlerDecorator<T>): (userInfo?: T) => ParameterDecorator {
-        return (userInfo?: T) => (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-            const routeMetaDataParameter = this.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
-            routeMetaDataParameter.handler = handler;
-            routeMetaDataParameter.parameterProxy = userInfo;
+    public static createRouteDataDecorator<T>(handler: RouteHandlerDecorator<T>): (key?: string) => ParameterDecorator {
+        return (key?: string): ParameterDecorator => {
+            return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+                const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
+                routeMetaDataParameter.parameterProxy.key = key;
+                routeMetaDataParameter.handler = handler;
+            };
         };
     }
 
-    public static defaultDecoratorHandler<T>(ctx: RouterContext, data?: any, options?: IParameterProxy<T> | string): Promise<T> {
-        let parameterOptions: IParameterProxy<T>;
-        if (typeof options === 'string') {
-            parameterOptions = {
-                key: options as string
-            };
-        } else {
-            parameterOptions = options || {};
-        }
-        if (data === undefined) {
-            if (parameterOptions.isOptional !== true) {
+    public static defaultDecoratorHandler<T>(ctx: RouterContext, parameterProxy: IParameterProxy<T>, raw?: any): Promise<T> {
+        if (raw === undefined) {
+            if (parameterProxy.isOptional !== true) {
                 throw HttpError.badRequest
             }
             return undefined;
         }
-        const key = parameterOptions.key;
+        const key = parameterProxy.key;
         if (key !== undefined) {
-            if (data[key] === undefined) {
-                if (parameterOptions.isOptional !== true) {
+            if (raw[key] === undefined) {
+                if (parameterProxy.isOptional !== true) {
                     throw HttpError.badRequest
                 }
                 return undefined;
             }
-            data = data[key];
+            raw = raw[key];
         }
-        const transform = parameterOptions.transform;
+        const transform = parameterProxy.transform;
         if(transform !== undefined) {
-            return transform(ctx, data);
+            return transform(ctx, raw);
         }
-        return data;
+        return raw;
     }
 }

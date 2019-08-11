@@ -1,26 +1,58 @@
 import {RouterContext} from 'koa-router';
-import {IParameterDecoratorOptions} from '../interfaces';
 import {RouteParametersUtils} from '../utils';
+import {IParameterProxy, RouteParameterTransformer} from '../interfaces';
 
-export const Body = RouteParametersUtils.createDecoratorHandler((ctx: RouterContext, options?: IParameterDecoratorOptions | string): Promise<any> => {
-    return RouteParametersUtils.defaultDecoratorHandler(ctx, ctx.request['body'], options);
+export const Body = RouteParametersUtils.createRouteDataDecorator(<T = any>(ctx: RouterContext, parameterProxy?: IParameterProxy<T>): Promise<any> => {
+    return RouteParametersUtils.defaultDecoratorHandler(ctx, parameterProxy, ctx.request['body']);
 });
 
-export const Query = RouteParametersUtils.createDecoratorHandler((ctx: RouterContext, options?: IParameterDecoratorOptions | string): Promise<any> => {
-    return RouteParametersUtils.defaultDecoratorHandler(ctx, ctx.request.query, options);
+export const Query = RouteParametersUtils.createRouteDataDecorator(<T = any>(ctx: RouterContext, parameterProxy?: IParameterProxy<T>): Promise<any> => {
+    return RouteParametersUtils.defaultDecoratorHandler(ctx, parameterProxy, ctx.request.query);
 });
 
-export const Headers = RouteParametersUtils.createDecoratorHandler((ctx: RouterContext, options?: IParameterDecoratorOptions | string): Promise<any> => {
-    return RouteParametersUtils.defaultDecoratorHandler(ctx, ctx.request.headers, options);
+export const Headers = RouteParametersUtils.createRouteDataDecorator(<T = any>(ctx: RouterContext, parameterProxy?: IParameterProxy<T>): Promise<any> => {
+    return RouteParametersUtils.defaultDecoratorHandler(ctx, parameterProxy, ctx.request.headers);
 });
 
-export const Params = RouteParametersUtils.createDecoratorHandler((ctx: RouterContext, options?: IParameterDecoratorOptions | string): Promise<any> => {
-    return RouteParametersUtils.defaultDecoratorHandler(ctx, ctx.params, options);
+export const Params = RouteParametersUtils.createRouteDataDecorator(<T = any>(ctx: RouterContext, parameterProxy?: IParameterProxy<T>): Promise<any> => {
+    return RouteParametersUtils.defaultDecoratorHandler(ctx, parameterProxy, ctx.params);
 });
 
-export const State = RouteParametersUtils.createDecoratorHandler((ctx: RouterContext, options?: IParameterDecoratorOptions | string): Promise<any> => {
-    return RouteParametersUtils.defaultDecoratorHandler(ctx, ctx.state, options);
+export const State = RouteParametersUtils.createRouteDataDecorator(<T = any>(ctx: RouterContext, parameterProxy?: IParameterProxy<T>): Promise<any> => {
+    return RouteParametersUtils.defaultDecoratorHandler(ctx, parameterProxy, ctx.state);
 });
-export const Req = RouteParametersUtils.createDecoratorHandler((ctx => Promise.resolve(ctx.request)));
-export const Res = RouteParametersUtils.createDecoratorHandler((ctx => Promise.resolve(ctx.response)));
-export const Next = RouteParametersUtils.createDecoratorHandler((ctx => Promise.resolve(ctx.next)));
+
+export const Transform = (rpt: RouteParameterTransformer): ParameterDecorator => {
+    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+        const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
+        routeMetaDataParameter.parameterProxy.transform = rpt;
+    };
+};
+
+export const Optional = (): ParameterDecorator => {
+    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+        const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
+        routeMetaDataParameter.parameterProxy.isOptional = true;
+    };
+};
+
+export const Req = (): ParameterDecorator => {
+    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+        const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
+        routeMetaDataParameter.handler = (ctx) => Promise.resolve(ctx.req);
+    };
+};
+
+export const Res = (): ParameterDecorator => {
+    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+        const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
+        routeMetaDataParameter.handler = (ctx) => Promise.resolve(ctx.response);
+    };
+};
+
+export const Next = (): ParameterDecorator => {
+    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+        const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
+        routeMetaDataParameter.handler = (ctx) => Promise.resolve(ctx.next);
+    };
+};
