@@ -23,35 +23,35 @@ export const State = RouteParametersUtils.createRouteDataDecorator(<T = any>(ctx
 });
 
 export const Transform = (rpt: RouteParameterTransformer): ParameterDecorator => {
-    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
         routeMetaDataParameter.parameterProxy.transform = rpt;
     };
 };
 
 export const Optional = (): ParameterDecorator => {
-    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
         routeMetaDataParameter.parameterProxy.isOptional = true;
     };
 };
 
 export const Req = (): ParameterDecorator => {
-    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
         routeMetaDataParameter.handler = (ctx) => Promise.resolve(ctx.req);
     };
 };
 
 export const Res = (): ParameterDecorator => {
-    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
         routeMetaDataParameter.handler = (ctx) => Promise.resolve(ctx.response);
     };
 };
 
 export const Next = (): ParameterDecorator => {
-    return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+    return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
         const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
         routeMetaDataParameter.handler = (ctx) => Promise.resolve(ctx.next);
     };

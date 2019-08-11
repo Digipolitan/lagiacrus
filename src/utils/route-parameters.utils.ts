@@ -1,8 +1,7 @@
 import {LAGIACRUS_ROUTE_METADATA, RouteHandlerDecorator} from '../consts';
-import {IRouteMetadataParameters} from '../interfaces';
+import {IParameterProxy, IRouteMetadataParameters} from '../interfaces';
 import {RouterContext} from 'koa-router';
 import {HttpError} from '../http.error';
-import {IParameterProxy} from '../interfaces/parameter-proxy.interface';
 
 export class RouteParametersUtils {
 
@@ -25,7 +24,7 @@ export class RouteParametersUtils {
 
     public static createRouteDataDecorator<T>(handler: RouteHandlerDecorator<T>): (key?: string) => ParameterDecorator {
         return (key?: string): ParameterDecorator => {
-            return function(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+            return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
                 const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
                 routeMetaDataParameter.parameterProxy.key = key;
                 routeMetaDataParameter.handler = handler;

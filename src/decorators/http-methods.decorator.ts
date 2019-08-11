@@ -33,7 +33,7 @@ export function All(path?: string): MethodDecorator {
 }
 
 function _routeMethodDecorator(httpVerb: string, path?: string): MethodDecorator {
-    return function(target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
         const methodProxy: IMethodProxy = descriptor.value[LAGIACRUS_KEY] || {};
         methodProxy.httpVerb = httpVerb;
         methodProxy.path = SanitizerUtils.sanitizePath(path);
