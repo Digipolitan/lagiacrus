@@ -33,7 +33,7 @@ export function All(path?: string): MethodDecorator {
 }
 
 function _routeMethodDecorator(httpVerb: string, path?: string): MethodDecorator {
-    return function(target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
         const methodProxy: IMethodProxy = descriptor.value[LAGIACRUS_KEY] || {};
         methodProxy.httpVerb = httpVerb;
         methodProxy.path = SanitizerUtils.sanitizePath(path);
@@ -43,7 +43,7 @@ function _routeMethodDecorator(httpVerb: string, path?: string): MethodDecorator
             const args: any[] = [];
             if (allRouteMetaDataParameters !== undefined) {
                 for (let routeMetaDataParameters of allRouteMetaDataParameters) {
-                    args[routeMetaDataParameters.index] = await routeMetaDataParameters.handler(ctx, routeMetaDataParameters.userInfo);
+                    args[routeMetaDataParameters.index] = await routeMetaDataParameters.handler(ctx, routeMetaDataParameters.parameterProxy);
                 }
             }
             return method.apply(this, args);

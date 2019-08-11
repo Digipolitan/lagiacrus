@@ -1,50 +1,58 @@
 import {LAGIACRUS_ROUTE_METADATA, RouteHandlerDecorator} from '../consts';
-import {IParameterDecoratorOptions, IRouteMetadataParameters} from '../interfaces';
+import {IParameterProxy, IRouteMetadataParameters} from '../interfaces';
 import {RouterContext} from 'koa-router';
+import {HttpError} from '../http.error';
 
 export class RouteParametersUtils {
 
-    public static createDecorator<T>(handler: RouteHandlerDecorator<T>): (userInfo?: T) => ParameterDecorator {
-        return (userInfo?: T) => (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
-            const routeMetaDataParameters: IRouteMetadataParameters<T>[] = Reflect.getOwnMetadata(LAGIACRUS_ROUTE_METADATA, target, propertyKey) || [];
-            routeMetaDataParameters.push({
-                index: parameterIndex,
-                userInfo,
-                handler
-            });
+    public static getRouteMetaDataParameter<T>(target: Object, propertyKey: string | symbol, parameterIndex: number): IRouteMetadataParameters<T> {
+        let routeMetaDataParameters: IRouteMetadataParameters<T>[] = Reflect.getOwnMetadata(LAGIACRUS_ROUTE_METADATA, target, propertyKey);
+        if(routeMetaDataParameters === undefined) {
+            routeMetaDataParameters = [];
             Reflect.defineMetadata(LAGIACRUS_ROUTE_METADATA, routeMetaDataParameters, target, propertyKey);
+        }
+        let routeMetaDataParameter =  routeMetaDataParameters.find((rmdp) => rmdp.index === parameterIndex);
+        if(routeMetaDataParameter === undefined) {
+            routeMetaDataParameter = {
+                index: parameterIndex,
+                parameterProxy: {}
+            };
+            routeMetaDataParameters.push(routeMetaDataParameter);
+        }
+        return routeMetaDataParameter;
+    }
+
+    public static createRouteDataDecorator<T>(handler: RouteHandlerDecorator<T>): (key?: string) => ParameterDecorator {
+        return (key?: string): ParameterDecorator => {
+            return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
+                const routeMetaDataParameter = RouteParametersUtils.getRouteMetaDataParameter(target, propertyKey, parameterIndex);
+                routeMetaDataParameter.parameterProxy.key = key;
+                routeMetaDataParameter.handler = handler;
+            };
         };
     }
 
-    public static defaultDecoratorHandler<T>(ctx: RouterContext, data?: any, options?: IParameterDecoratorOptions<T> | string): Promise<T> {
-        let parameterOptions: IParameterDecoratorOptions<T>;
-        if (typeof options === 'string') {
-            parameterOptions = {
-                key: options as string
-            }
-        } else {
-            parameterOptions = options || {};
-        }
-        if (data === undefined) {
-            if (parameterOptions.isOptional !== true) {
-                ctx.throw(400);
+    public static defaultDecoratorHandler<T>(ctx: RouterContext, parameterProxy: IParameterProxy<T>, raw?: any): Promise<T> {
+        if (raw === undefined) {
+            if (parameterProxy.isOptional !== true) {
+                throw HttpError.badRequest
             }
             return undefined;
         }
-        const key = parameterOptions.key;
+        const key = parameterProxy.key;
         if (key !== undefined) {
-            if (data[key] === undefined) {
-                if (parameterOptions.isOptional !== true) {
-                    ctx.throw(400);
+            if (raw[key] === undefined) {
+                if (parameterProxy.isOptional !== true) {
+                    throw HttpError.badRequest
                 }
                 return undefined;
             }
-            data = data[key];
+            raw = raw[key];
         }
-        const transform = parameterOptions.transform;
+        const transform = parameterProxy.transform;
         if(transform !== undefined) {
-            return transform(ctx, data);
+            return transform(ctx, raw);
         }
-        return data;
+        return raw;
     }
 }

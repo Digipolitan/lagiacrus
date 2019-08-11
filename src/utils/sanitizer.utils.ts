@@ -26,8 +26,14 @@ export class SanitizerUtils {
     }
 
     public static sanitizeControllerOptions(options?: IControllerOptions): IControllerOptions {
-        options = options || {};
-        options.path = SanitizerUtils.sanitizePath(options.path);
-        return options;
+        if (options === undefined) {
+            return {
+                path: SanitizerUtils.sanitizePath()
+            };
+        }
+        return {
+            ...options,
+            path: SanitizerUtils.sanitizePath(options.path)
+        }
     }
 }
