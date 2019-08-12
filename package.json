@@ -1,6 +1,6 @@
 {
   "name": "lagiacrus",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Lagiacrus adds decorators to Koa Application",
   "author": "Benoit Briatte",
   "license": "BSD-3-Clause",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "class-transformer": "^0.2.3",
-    "class-validator": "^0.9.1",
+    "class-validator": "^0.10.0",
     "koa": "^2.7.0",
     "koa-router": "^7.4.0",
     "reflect-metadata": "^0.1.13"
