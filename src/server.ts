@@ -31,19 +31,15 @@ export class Server {
         });
     }
 
-    public start(port: string | number): Promise<http.Server> {
-        return new Promise<http.Server>((resolve, reject) => {
-            if (this.isStarting) {
-                reject(new TypeError('The server cannot be started, it\'s already listening'));
-                return;
-            }
-            if (typeof port === 'string') {
-                port = parseInt(port as string, 10);
-            }
-            this.server = this.app.listen(port as number, () => {
-                resolve(this.server);
-            });
-        });
+    public start(port: string | number, listeningListener?: () => void): http.Server {
+        if (this.isStarting) {
+            throw new TypeError('The server cannot be started, it\'s already listening');
+        }
+        if (typeof port === 'string') {
+            port = parseInt(port as string, 10);
+        }
+        this.server = this.app.listen(port as number, listeningListener);
+        return this.server;
     }
 
     public get isStarting(): boolean {

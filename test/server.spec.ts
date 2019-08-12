@@ -20,8 +20,8 @@ describe('the server', () => {
         }
     });
 
-    it('should listen', async () => {
-        const http = await lagiacrus.start(port);
+    it('should listen',() => {
+        const http = lagiacrus.start(port);
         expect(http.listening).to.equal(true);
     });
 
@@ -42,9 +42,9 @@ describe('the server', () => {
     describe('Hello controller', () => {
         let request: SuperTest<Test>;
 
-        beforeEach(async () => {
+        beforeEach(() => {
             lagiacrus.mount(HelloController);
-            const server = await lagiacrus.start(port);
+            const server = lagiacrus.start(port);
             request = supertest(server);
         });
 
