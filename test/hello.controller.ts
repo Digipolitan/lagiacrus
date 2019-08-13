@@ -25,7 +25,7 @@ export class HelloController {
     }
 
     @Middleware(
-        bodyParser()
+        () => [bodyParser()]
     )
     @Post('/create')
     create(@Body() @Transform(T.toClass(HelloCreateDTO)) hello: HelloCreateDTO) {

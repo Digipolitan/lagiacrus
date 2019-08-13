@@ -4,6 +4,7 @@ import {SanitizerUtils} from './utils';
 import {RouterBuilder} from './router-builder';
 import {ServerOptions} from './interfaces';
 import * as http from 'http';
+import {Middleware} from 'koa';
 
 export class Server {
 
@@ -14,12 +15,14 @@ export class Server {
     public constructor(options: ServerOptions = {}) {
         this.app = options.app || new Koa();
         this.basePath = SanitizerUtils.sanitizePath((options.basePath || '/'));
-        const middlewares = options.middlewares;
-        if (middlewares === undefined) {
-            return;
-        }
-        for (const middleware of middlewares) {
-            this.app.use(middleware);
+        let middlewares = options.middlewares;
+        if (middlewares !== undefined) {
+            if(!Array.isArray(middlewares)) {
+                middlewares = middlewares.apply(this) as Middleware[];
+            }
+            for (const middleware of middlewares) {
+                this.app.use(middleware);
+            }
         }
     }
 
