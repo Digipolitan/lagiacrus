@@ -3,7 +3,7 @@ import {RouterContext} from 'koa-router';
 import {Middleware} from 'koa';
 import {ControllerConstructorOrInstance, LAGIACRUS_KEY} from './consts';
 import {ControllerUtils, SanitizerUtils} from './utils';
-import {IMethodProxy} from './interfaces';
+import {IController, IMethodProxy} from './interfaces';
 import {HttpError} from './http.error';
 
 export class RouterBuilder {
@@ -22,10 +22,16 @@ export class RouterBuilder {
             options.prefix = prefix;
         }
         const builder = new RouterBuilder(options);
-        builder.middlewares(...controller[LAGIACRUS_KEY].middlewares);
+        let middlewares = controller[LAGIACRUS_KEY].middlewares;
+        if (middlewares !== undefined) {
+            if (!Array.isArray(middlewares)) {
+                middlewares = middlewares.apply(controller) as Middleware[];
+            }
+            builder.middlewares(...middlewares);
+        }
         for (let key in controller) {
             if (controller[key] && controller[key][LAGIACRUS_KEY]) {
-                builder.method(controller[key][LAGIACRUS_KEY], controller[key]);
+                builder.method(controller, key);
             }
         }
         if (controller[LAGIACRUS_KEY].children !== undefined) {
@@ -42,14 +48,16 @@ export class RouterBuilder {
         return builder.router;
     }
 
-    public middlewares(...middlewares: Middleware[]): RouterBuilder {
+    public middlewares(... middlewares: Middleware[]): RouterBuilder {
         if (middlewares !== undefined && middlewares.length > 0) {
             this.router.use(...middlewares);
         }
         return this;
     }
 
-    public method(method: IMethodProxy, impl: Function): RouterBuilder {
+    public method(controller: IController, key: string): RouterBuilder {
+        const impl: Function = controller[key];
+        const method: IMethodProxy = impl[LAGIACRUS_KEY];
         const handler = async (ctx: RouterContext): Promise<any> => {
             const statusCode = method.statusCode;
             if(statusCode !== undefined) {
@@ -69,10 +77,13 @@ export class RouterBuilder {
             }
         };
         const {httpVerb, path} = method;
-        const middlewares = method.middlewares;
+        let middlewares = method.middlewares;
         const matcher = Router.prototype[httpVerb] || Router.prototype.all;
         const routePath = SanitizerUtils.sanitizePath(path);
-        if (middlewares) {
+        if (middlewares !== undefined) {
+            if (!Array.isArray(middlewares)) {
+                middlewares = middlewares.apply(controller) as Middleware[];
+            }
             matcher.bind(this.router)(routePath, ...middlewares, handler);
         } else {
             matcher.bind(this.router)(routePath, handler);
