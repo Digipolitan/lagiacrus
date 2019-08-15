@@ -9,6 +9,8 @@ import {HttpError} from '../src';
 })
 export class HelloController {
 
+    readonly testThis: boolean = true;
+
     @Get('/')
     displayWorld(): string {
         return 'world';
@@ -24,9 +26,9 @@ export class HelloController {
         return type;
     }
 
-    @Middleware(
-        () => [bodyParser()]
-    )
+    @Middleware([
+        bodyParser()
+    ])
     @Post('/create')
     create(@Body() @Transform(T.toClass(HelloCreateDTO)) hello: HelloCreateDTO) {
         return hello.say;
@@ -38,5 +40,10 @@ export class HelloController {
         if (error === true) {
             throw HttpError.conflict;
         }
+    }
+
+    @Get('/this')
+    testThisFunc() {
+        return this.testThis;
     }
 }

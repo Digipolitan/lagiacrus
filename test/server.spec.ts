@@ -90,5 +90,10 @@ describe('the server', () => {
             const res = await request.put('/hello/update?error=true');
             expect(res.status).to.equal(409);
         });
+
+        it('should keep the this inside the function', async () => {
+            const res = await request.get('/hello/this');
+            expect(res.text).to.equal('true');
+        });
     });
 });
