@@ -64,7 +64,7 @@ export class RouterBuilder {
                 ctx.status = statusCode;
             }
             try {
-                const res = await impl(ctx);
+                const res = await impl.call(controller, ctx);
                 if(ctx.body === undefined) {
                     ctx.body = res;
                 }
