@@ -40,7 +40,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "class-transformer": "^0.2.3",
+    "class-transformer": "^0.3.1",
     "class-validator": "^0.10.0",
     "koa": "^2.7.0",
     "koa-router": "^7.4.0",
